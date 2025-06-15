@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LeafSpec Admin{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="admin-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>LeafSpec</h1>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a></li>
+                <li><a href="{{ url_for('admin.predictions') }}" class="{% if request.endpoint == 'admin.predictions' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i> Predictions
+                </a></li>
+                <li><a href="{{ url_for('admin.species_list') }}" class="{% if request.endpoint == 'admin.species_list' %}active{% endif %}">
+                    <i class="fas fa-leaf"></i> Species Management
+                </a></li>
+                <li><a href="{{ url_for('admin.feedback_list') }}" class="{% if request.endpoint == 'admin.feedback_list' %}active{% endif %}">
+                    <i class="fas fa-comments"></i> Feedback
+                </a></li>
+                <li><a href="{{ url_for('admin.performance') }}" class="{% if request.endpoint == 'admin.performance' %}active{% endif %}">
+                    <i class="fas fa-chart-bar"></i> Performance
+                </a></li>
+                <li><a href="{{ url_for('admin.system_health') }}" class="{% if request.endpoint == 'admin.system_health' %}active{% endif %}">
+                    <i class="fas fa-server"></i> System Health
+                </a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="/"><i class="fas fa-home"></i> Back to Home</a>
+            </div>
+        </nav>
+        
+        <main class="content">
+            <header class="content-header">
+                <h2>{% block header_title %}Dashboard{% endblock %}</h2>
+                <div class="user-info">
+                    <span>Welcome, Admin</span>
+                </div>
+            </header>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                            <button class="close-btn">&times;</button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="content-body">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

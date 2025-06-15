@@ -1,0 +1,14 @@
+Flask
+flask-cors
+flask-pymongo
+Pillow
+pymongo
+tensorflow
+numpy
+Werkzeug
+modelbit
+gunicorn
+google-auth
+torch
+torchvision
+opencv-python

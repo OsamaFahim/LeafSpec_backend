@@ -1,0 +1,155 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard | LeafSpec Admin{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Total Predictions</h3>
+            <p class="stat-number">{{ stats.total_predictions }}</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Users</h3>
+            <p class="stat-number">{{ stats.total_users }}</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-leaf"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Species</h3>
+            <p class="stat-number">{{ stats.total_species }}</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-comments"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Feedback</h3>
+            <p class="stat-number">{{ stats.total_feedback }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-charts">
+    <div class="chart-container">
+        <h3>Recent Predictions</h3>
+        <canvas id="predictionsChart"></canvas>
+    </div>
+    
+    <div class="chart-container">
+        <h3>Popular Species</h3>
+        <canvas id="speciesChart"></canvas>
+    </div>
+</div>
+
+<div class="dashboard-tables">
+    <div class="recent-items">
+        <h3>Recent Predictions</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Species</th>
+                    <th>Confidence</th>
+                    <th>User</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pred in recent_predictions %}
+                <tr>
+                    <td>{{ pred.species }}</td>
+                    <td>{{ pred.confidence }}</td>
+                    <td>{{ pred.user_email or 'Anonymous' }}</td>
+                    <td>{{ pred.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.prediction_detail', prediction_id=pred._id) }}" class="btn-view">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('admin.predictions') }}" class="view-all">View All Predictions</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Popular species chart
+        const speciesCtx = document.getElementById('speciesChart').getContext('2d');
+        const speciesChart = new Chart(speciesCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% if popular_species %}{% for item in popular_species %}'{{ item.species }}'{% if not loop.last %},{% endif %}{% endfor %}{% endif %}],
+                datasets: [{
+                    label: 'Number of Predictions',
+                    data: [{% if popular_species %}{% for item in popular_species %}{{ item.count }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}],
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Fetch prediction data for chart
+        fetch('{{ url_for("admin.predictions_chart_data") }}')
+            .then(response => response.json())
+            .then(data => {
+                const predictionsCtx = document.getElementById('predictionsChart').getContext('2d');
+                const predictionsChart = new Chart(predictionsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Predictions',
+                            data: data.values,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 2,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching prediction data:', error);
+            });
+    });
+</script>
+{% endblock %}

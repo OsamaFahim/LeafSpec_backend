@@ -1,0 +1,148 @@
+{% extends "admin/base.html" %}
+
+{% block title %}System Health | LeafSpec Admin{% endblock %}
+{% block header_title %}System Health & Monitoring{% endblock %}
+
+{% block content %}
+<div class="system-metrics">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-database"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Database Size</h3>
+            <p class="stat-number">{{ (db_stats.dataSize / 1024 / 1024)|round(2) }} MB</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Predictions (7 days)</h3>
+            <p class="stat-number">{{ api_stats.predictions }}</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-user-plus"></i>
+        </div>
+        <div class="stat-content">
+            <h3>New Users (7 days)</h3>
+            <p class="stat-number">{{ api_stats.user_registrations }}</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-comments"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Feedback (7 days)</h3>
+            <p class="stat-number">{{ api_stats.feedback }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="system-info">
+    <div class="card">
+        <div class="card-header">
+            <h3>Database Information</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="admin-table">
+                <tbody>
+                    <tr>
+                        <th>Database Name</th>
+                        <td>{{ db_stats.db }}</td>
+                    </tr>
+                    <tr>
+                        <th>Collections</th>
+                        <td>{{ db_stats.collections }}</td>
+                    </tr>
+                    <tr>
+                        <th>Documents</th>
+                        <td>{{ db_stats.objects }}</td>
+                    </tr>
+                    <tr>
+                        <th>Indexes</th>
+                        <td>{{ db_stats.indexes }}</td>
+                    </tr>
+                    <tr>
+                        <th>Storage Size</th>
+                        <td>{{ (db_stats.storageSize / 1024 / 1024)|round(2) }} MB</td>
+                    </tr>
+                    <tr>
+                        <th>Index Size</th>
+                        <td>{{ (db_stats.indexSize / 1024 / 1024)|round(2) }} MB</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="chart-container">
+        <h3>API Usage (7 days)</h3>
+        <canvas id="apiUsageChart"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // API usage chart
+        fetch('{{ url_for("admin.api_usage_data") }}')
+            .then(response => response.json())
+            .then(data => {
+                const apiCtx = document.getElementById('apiUsageChart').getContext('2d');
+                const apiChart = new Chart(apiCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,
+                        datasets: [
+                            {
+                                label: 'Predictions',
+                                data: data.predictions,
+                                borderColor: 'rgba(52, 152, 219, 1)',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'User Registrations',
+                                data: data.registrations,
+                                borderColor: 'rgba(46, 204, 113, 1)',
+                                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Feedback',
+                                data: data.feedback,
+                                borderColor: 'rgba(155, 89, 182, 1)',
+                                backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    });
+</script>
+{% endblock %}

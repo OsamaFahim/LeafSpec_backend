@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Feedback | LeafSpec Admin{% endblock %}
+{% block header_title %}User Feedback{% endblock %}
+
+{% block content %}
+<div class="feedback-container">
+    <div class="card">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Species Classified</th>
+                        <th>Correct?</th>
+                        <th>Feedback</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in feedback %}
+                    <tr>
+                        <td>{{ item.userId or 'Anonymous' }}</td>
+                        <td>{{ item.speciesClassified }}</td>
+                        <td>
+                            {% if item.userResponse and item.userResponse.isCorrect == "Correct" %}
+                                <span class="status-badge status-good">Correct</span>
+                            {% else %}
+                                <span class="status-badge status-poor">Incorrect</span>
+                            {% endif %}
+                        </td>
+                        <td class="feedback-content">
+                            {{ item.userResponse.feedback if item.userResponse and item.userResponse.feedback else 'No feedback provided' }}
+                        </td>
+                        <td>
+                            <form action="{{ url_for('admin.mark_feedback_resolved', feedback_id=item._id) }}" method="POST" class="inline-form">
+                                <button type="submit" class="btn-view" title="Mark as resolved">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination">
+            {% if pagination.page > 1 %}
+                <a href="{{ url_for('admin.feedback_list', page=pagination.page-1) }}" class="pagination-btn">&laquo; Previous</a>
+            {% endif %}
+            
+            <span class="pagination-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+            
+            {% if pagination.page < pagination.pages %}
+                <a href="{{ url_for('admin.feedback_list', page=pagination.page+1) }}" class="pagination-btn">Next &raquo;</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
