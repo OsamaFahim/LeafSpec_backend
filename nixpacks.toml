@@ -1,8 +1,15 @@
+# nixpacks.toml
 [phases.setup]
-nixPkgs = ["python311"]
+# Use Nix’s Python interpreter and pip directly
+nixPkgs = ["python311", "python311Packages.pip"]
 
 [phases.install]
-cmds = ["python3.11 -m pip install --upgrade pip", "pip install -r requirements.txt"]
+# Install your Python dependencies without caching wheels
+cmds = [
+  "pip install --no-cache-dir -r requirements.txt"
+]
 
 [start]
-cmd = "python run.py"
+# Use Gunicorn (faster, production‑ready) to serve your app
+# Adjust `run:app` to point at your Flask app object
+cmd = "gunicorn run:app --bind 0.0.0.0:$PORT"
