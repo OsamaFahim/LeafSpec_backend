@@ -8,6 +8,6 @@ Werkzeug
 modelbit
 gunicorn
 google-auth
-torch
-torchvision
-opencv-python
+torch==2.1.0+cpu --index-url https://download.pytorch.org/whl/cpu
+torchvision==0.16.0+cpu --index-url https://download.pytorch.org/whl/cpu
+opencv-python-headless
